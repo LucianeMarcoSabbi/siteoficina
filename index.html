@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bússola de Sal - Player Oficial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            /* Substitua pela sua imagem de preferência */
+            background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* --- Audio Player Styles --- */
+        .audio-player {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #2ecc71;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        button:hover {
+            background: #27ae60;
+            transform: scale(1.05);
+        }
+
+        .timeline-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            cursor: pointer;
+            accent-color: #2ecc71;
+        }
+
+        .time {
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        /* --- YouTube Container --- */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .label-text {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bússola de Sal</h1>
+    
+    <div class="audio-player">
+        <span class="label-text">Player de Áudio</span>
+        
+        <!-- Elemento de áudio escondido -->
+        <audio id="myAudio">
+            <source src="SEU_ARQUIVO_DE_AUDIO.mp3" type="audio/mpeg">
+            Seu navegador não suporta o elemento de áudio.
+        </audio>
+
+        <div class="controls">
+            <button id="playBtn">PLAY</button>
+            <button id="pauseBtn">PAUSE</button>
+        </div>
+
+        <div class="timeline-container">
+            <span id="currentTime" class="time">0:00</span>
+            <input type="range" id="seekSlider" value="0" max="100">
+            <span id="duration" class="time">0:00</span>
+        </div>
+        
+        <div style="margin-top: 10px;">
+            <small>Volume</small>
+            <input type="range" id="volumeSlider" value="100" max="100" style="width: 100px;">
+        </div>
+    </div>
+
+    <div class="video-container">
+        <!-- Substitua o ID final (dQw4w9WgXcQ) pelo ID do seu vídeo do YouTube -->
+        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+    </div>
+</div>
+
+<script>
+    const audio = document.getElementById('myAudio');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const seekSlider = document.getElementById('seekSlider');
+    const currentTimeText = document.getElementById('currentTime');
+    const durationText = document.getElementById('duration');
+    const volumeSlider = document.getElementById('volumeSlider');
+
+    // Funções de Play/Pause
+    playBtn.addEventListener('click', () => audio.play());
+    pauseBtn.addEventListener('click', () => audio.pause());
+
+    // Atualizar Linha do Tempo
+    audio.addEventListener('timeupdate', () => {
+        const position = audio.currentTime / audio.duration;
+        seekSlider.value = position * 100;
+        
+        // Formatar tempo
+        currentTimeText.textContent = formatTime(audio.currentTime);
+    });
+
+    // Definir duração total quando o áudio carregar
+    audio.addEventListener('loadedmetadata', () => {
+        durationText.textContent = formatTime(audio.duration);
+    });
+
+    // Arrastar a linha do tempo
+    seekSlider.addEventListener('input', () => {
+        const time = audio.duration * (seekSlider.value / 100);
+        audio.currentTime = time;
+    });
+
+    // Controle de Volume
+    volumeSlider.addEventListener('input', () => {
+        audio.volume = volumeSlider.value / 100;
+    });
+
+    // Função auxiliar para formatar segundos em MM:SS
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return "0:00";
+        const min = Math.floor(seconds / 60);
+        const sec = Math.floor(seconds % 60);
+        return min + ":" + (sec < 10 ? "0" + sec : sec);
+    }
+</script>
+
+</body>
+</html>
